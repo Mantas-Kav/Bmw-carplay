@@ -3,7 +3,6 @@
 import argparse
 import json
 from pathlib import Path
-import re
 
 MAX_BYTES = 8 * 1024 * 1024
 
@@ -13,12 +12,12 @@ def inspect_bytes(data: bytes, filename: str = "sample") -> dict:
     if len(data) > MAX_BYTES:
         result["error"] = "file too large for offline inspection"
         return result
-    if data.startswith(b"PK\x5cx03\x5cx04"):
+    if data.startswith(bytes([0x50, 0x4B, 0x03, 0x04])):
         result["type"] = "zip_container"
     elif data.lstrip().startswith(b"<?xml") or (data.lstrip().startswith(b"<") and suffix == ".xml"):
         result["type"] = "xml_candidate"
         result["note"] = "XML contents intentionally not displayed; XML is not proof of a valid FSC"
-    elif suffix == ".der" and data[:1] == b"\x5cx30":
+    elif suffix == ".der" and data[:1] == bytes([0x30]):
         result["type"] = "asn1_der_candidate"
         result["note"] = "SEQUENCE tag detected only; DER structure/signature not validated"
     elif suffix == ".fsc":
